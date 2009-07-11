@@ -64,7 +64,7 @@ grammar ComplexHTML
   end
 
   rule quoted_value
-    "'" [^']* "'" / '"' [^"]* '"' {
+    '"' [^"]* '"' {
       def content
         elements[1].text_value
       end
