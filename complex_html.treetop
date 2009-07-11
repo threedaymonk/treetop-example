@@ -1,0 +1,73 @@
+grammar ComplexHTML
+  rule document
+    (text / open_tag / close_tag / empty_tag)* {
+      def content
+        elements.map{ |e| e.content }
+      end
+    }
+  end
+
+  rule text
+    [^<]+ {
+      def content
+        [:text, text_value]
+      end
+    }
+  end
+
+  rule open_tag
+    "<" name attribute_list ">" {
+      def content
+        [:open_tag, elements[1].content, elements[2].content]
+      end
+    }
+  end
+
+  rule empty_tag
+    "<" name attribute_list [\s]* "/>" {
+      def content
+        [:empty_tag, elements[1].content, elements[2].content]
+      end
+    }
+  end
+
+  rule close_tag
+    "</" name ">" {
+      def content
+        [:close_tag, elements[1].content]
+      end
+    }
+  end
+
+  rule name
+    [A-Za-z0-9]+ {
+      def content
+        text_value
+      end
+    }
+  end
+
+  rule attribute_list
+    attribute* {
+      def content
+        elements.inject({}){ |hash, e| hash.merge(e.content) }
+      end
+    }
+  end
+
+  rule attribute
+    [\s]+ name "=" quoted_value {
+      def content
+        {elements[1].content => elements[3].content}
+      end
+    }
+  end
+
+  rule quoted_value
+    "'" [^']* "'" / '"' [^"]* '"' {
+      def content
+        elements[1].text_value
+      end
+    }
+  end
+end
